@@ -1,44 +1,71 @@
 package io.d6e.vibrio.vibrio;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanResult;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends Activity {
     BluetoothManager  btManager;
     BluetoothAdapter btAdapter;
 
-//    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        btManager = (BluetoothManager)getSystemService(BLUETOOTH_SERVICE);
-//        btAdapter = btManager.getAdapter();
-
+        setContentView(R.layout.activity_main);
+        btManager = (BluetoothManager)getSystemService(BLUETOOTH_SERVICE);
+        btAdapter = btManager.getAdapter();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void scanBLE(View view){
-//        Intent intent = new Intent();
-//        btAdapter.enable();
-//        BluetoothLeScanner btLeScanner = btAdapter.getBluetoothLeScanner();
-//        ScanCallback scanCb = new BleScanCallback();
-//        btLeScanner.startScan(scanCb);
+        String btMessage;
+
+        if (btAdapter == null) { // if there's no bt adapter...
+            btMessage = "There doesn't appear to be a bluetooth device...";
+            Log.w("MainActivity", btMessage);
+            return; // Nothing to do here!!
+        }else{
+            btAdapter.enable();
+//            btMessage = btAdapter.getAddress();
+        }
+        BluetoothLeScanner btLeScanner = btAdapter.getBluetoothLeScanner();
+        BleScanCallback scanCb = new BleScanCallback("scanning");
+        Log.d("MainActivity", "About to scan...");
+        btLeScanner.startScan(scanCb);
+//        ArrayList<ScanResult> results = new ArrayList<ScanResult>();
+//        scanCb.onBatchScanResults(results);
+//        scanCb.onBatchScanResults(results);
+//        scanCb.onBatchScanResults(results);
+
+        while(scanCb.message == "scanning"){
+            Log.d("MainActivity", "Scanning...");
+        }
+        Log.d("MainActivity", "Done scanning!");
+
+        btMessage = scanCb.message;
+
 
         // Create the text view
+        Intent intent = new Intent();
         TextView textView = new TextView(this);
         textView.setTextSize(40);
-        textView.setText("Hey world!");
+        textView.setText("bluetooth info:\n"+btMessage);
 
         // Set the text view as the activity layout
         setContentView(textView);
