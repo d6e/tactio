@@ -20,7 +20,7 @@ public class BleScanCallback extends ScanCallback {
 
     @Override
     public void onScanResult(int callbackType, ScanResult result) {
-        Log.i(MainActivity.TAG, "callbackType: " + String.valueOf(callbackType) + ", scan result: " + result.toString());
+//        Log.i(MainActivity.TAG, "callbackType: " + String.valueOf(callbackType) + ", scan result: " + result.toString());
         scanResults = result.toString();
         BluetoothDevice btDevice = result.getDevice();
 //        connectToDevice(btDevice);
