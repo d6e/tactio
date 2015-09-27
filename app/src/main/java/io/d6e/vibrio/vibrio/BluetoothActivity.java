@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
@@ -72,9 +73,6 @@ public class BluetoothActivity extends AppCompatActivity {
                 filters = new ArrayList<ScanFilter>();
             }
             scanLeDevice(true); // start scan
-            TextView tv = (TextView)findViewById(R.id.text);
-//            tv.setText(bleScanCallback.getScanResults());
-            tv.setText("test!");
         }
     }
 
@@ -115,6 +113,15 @@ public class BluetoothActivity extends AppCompatActivity {
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+    public void onRefreshButton(View view){
+//        scanLeDevice(true); // start scan
+//            Log.i(TAG, "Results: "+bleScanCallback.getScanResults());
+        TextView tv = (TextView)findViewById(R.id.text);
+//        tv.setText("this string is set ynamically from java code");
+        tv.setText(bleScanCallback.getScanResults());
     }
 
     private void scanLeDevice(final boolean enable) {
