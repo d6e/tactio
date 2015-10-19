@@ -10,8 +10,10 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.BluetoothSocket;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
@@ -24,8 +26,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 
 @TargetApi(21)
@@ -39,6 +46,7 @@ public class BluetoothActivity extends AppCompatActivity {
     private ScanSettings settings;
     private List<ScanFilter> filters;
     private BluetoothGatt mGatt;
+    private BluetoothGatt cmGatt;
     private BleScanCallback bleScanCallback;
     private OldLeScanCallback oldLeScanCallback;
 
@@ -95,11 +103,10 @@ public class BluetoothActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "Destroyed!!!");
-        if (mGatt == null) {
-            return;
+        if (mGatt != null) {
+            mGatt.close();
+            mGatt = null;
         }
-        mGatt.close();
-        mGatt = null;
     }
 
     @Override
@@ -118,10 +125,40 @@ public class BluetoothActivity extends AppCompatActivity {
 
     public void onRefreshButton(View view){
 //        scanLeDevice(true); // start scan
-//            Log.i(TAG, "Results: "+bleScanCallback.getScanResults());
         TextView tv = (TextView)findViewById(R.id.text);
 //        tv.setText("this string is set ynamically from java code");
-        tv.setText(bleScanCallback.getScanResults());
+        ArrayList<ScanResult> results = bleScanCallback.getScanResults();
+//        tv.setText(results.toString());
+        BluetoothDevice btDevice = results.get(0).getDevice();
+        Log.i(TAG, "Bonded state: " + btDevice.getBondState());
+        connectToDevice(btDevice);
+        Log.i(TAG, "!!! Get services: " + mGatt.getServices());
+//        ArrayList<BluetoothGattService> gattServs = (ArrayList<BluetoothGattService>) mGatt.getServices();
+//        Log.i(TAG, "GATservices: "+ gattServs.toString());
+
+//        UUID uuid = gattServs.get(0).getUuid();
+//        if (uuid != null){
+//            Log.i(TAG, "UUID: " + uuid.toString());
+//        } else {
+//            Log.i(TAG, "UUID: null" + null);
+//        }
+//        BluetoothSocket btSocket = null;
+//        try {
+//            btSocket = btDevice.createInsecureRfcommSocketToServiceRecord(uuid);
+//            OutputStream out = btSocket.getOutputStream();
+//            out.write(Integer.parseInt("hello world"));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+
+
+//        mGatt.beginReliableWrite();
+//        mGatt.executeReliableWrite();
+
+        tv.setText("Connected to: " + btDevice.getName());
+//        Log.i(TAG, "Discovered services: " + mGatt.);
+//        mGatt.readRemoteRssi(); // Will give you the remote signal strength
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -154,7 +191,11 @@ public class BluetoothActivity extends AppCompatActivity {
 
     public void connectToDevice(BluetoothDevice device) {
         if (mGatt == null) {
-            mGatt = device.connectGatt(this, false, gattCallback);
+            mGatt = device.connectGatt(this, true, gattCallback);
+            Log.i(TAG, "Connecting... " + mGatt.connect());
+
+//            Log.i(TAG, "Create bond... " + device.createBond());
+//            Log.i(TAG, "Bonded state: " + device.getBondState());
             scanLeDevice(false);// will stop after first device detection
         }
     }
@@ -175,14 +216,17 @@ public class BluetoothActivity extends AppCompatActivity {
                 default:
                     Log.e(TAG, "gattCallback: " + "STATE_OTHER");
             }
-
         }
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             List<BluetoothGattService> services = gatt.getServices();
+            Log.i(TAG, "Status: " + status);
             Log.i(TAG, "onServicesDiscovered: " + services.toString());
+            cmGatt = gatt;
             gatt.readCharacteristic(services.get(1).getCharacteristics().get(0));
+//            gatt.beginReliableWrite()
+            Log.i(TAG, "beginReliableWrite(): "+gatt.beginReliableWrite());
         }
 
         @Override

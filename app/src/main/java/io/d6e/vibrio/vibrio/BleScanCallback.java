@@ -2,6 +2,7 @@ package io.d6e.vibrio.vibrio;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.os.Build;
@@ -12,28 +13,23 @@ import java.util.List;
 // Async callback for bluetooth scan (API > 21)
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class BleScanCallback extends ScanCallback {
-    private String scanResults;
+    private ArrayList<ScanResult> scanResults;
+    private BluetoothGatt mGatt;
 
-    public String getScanResults() {
+    public ArrayList<ScanResult> getScanResults() {
         return scanResults;
     }
 
     @Override
     public void onScanResult(int callbackType, ScanResult result) {
-//        Log.i(MainActivity.TAG, "callbackType: " + String.valueOf(callbackType) + ", scan result: " + result.toString());
-        scanResults = result.toString();
-        BluetoothDevice btDevice = result.getDevice();
-//        connectToDevice(btDevice);
+        scanResults = new ArrayList<ScanResult>();
+        scanResults.add(result);
     }
 
     @Override
     public void onBatchScanResults(List<ScanResult> results) {
-        ArrayList<String> resultList = new ArrayList<String>();
-        for (ScanResult sr : results) {
-            resultList.add(sr.toString());
-        }
-        scanResults = resultList.toString();
-        Log.i(MainActivity.TAG, "Found several results: " + resultList.toString());
+        scanResults = (ArrayList<ScanResult>) results;
+        Log.i(MainActivity.TAG, "Found several results: " + results.toString());
     }
 
     @Override
